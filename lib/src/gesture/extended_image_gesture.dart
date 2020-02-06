@@ -1,6 +1,7 @@
 import 'package:extended_image/src/gesture/extended_image_gesture_utils.dart';
 import 'package:extended_image/src/gesture/extended_image_gesture_page_view.dart';
 import 'package:extended_image/src/extended_image_utils.dart';
+import 'package:extended_image/src/gesture/extended_image_scribble.dart';
 import 'package:extended_image/src/image/extended_raw_image.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
@@ -29,6 +30,7 @@ class _ExtendedImageGestureState extends State<ExtendedImageGesture>
   GestureAnimation _gestureAnimation;
   GestureConfig _gestureConfig;
   ExtendedImageGesturePageViewState _pageViewState;
+  ExtendedImageScribble _scribbleMode;
 
   @override
   void initState() {
@@ -128,6 +130,14 @@ class _ExtendedImageGestureState extends State<ExtendedImageGesture>
   Offset _updateSlidePageImageStartingOffset;
 
   void _handleScaleUpdate(ScaleUpdateDetails details) {
+    if (_scribbleMode?.enable ?? false) {
+      if (_scribbleMode.controller.isNotNormal) return;
+      if (!_scribbleMode.controller.checkHasMoveToDown()) {
+        _handleScaleStart(ScaleStartDetails(focalPoint: details.focalPoint, localFocalPoint: details.localFocalPoint));
+        return;
+      }
+    }
+
     ///whether gesture page
     if (widget.extendedImageSlidePageState != null &&
         details.scale == 1.0 &&
@@ -231,6 +241,7 @@ class _ExtendedImageGestureState extends State<ExtendedImageGesture>
   }
 
   void _handleScaleEnd(ScaleEndDetails details) {
+    if ((_scribbleMode?.enable ?? false) && _scribbleMode.controller.isNotNormal) return;
     if (widget.extendedImageSlidePageState != null &&
         widget.extendedImageSlidePageState.isSliding) {
       _updateSlidePageStartingOffset = null;
@@ -304,6 +315,8 @@ class _ExtendedImageGestureState extends State<ExtendedImageGesture>
 
   @override
   Widget build(BuildContext context) {
+    _scribbleMode = ExtendedImageScribble.of(context);
+
     if (_gestureConfig.cacheGesture) {
       _gestureDetailsCache[widget.extendedImageState.imageStreamKey] =
           _gestureDetails;

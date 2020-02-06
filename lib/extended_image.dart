@@ -1,6 +1,7 @@
 library extended_image;
 
 export 'src/gesture/extended_image_gesture.dart';
+export 'src/gesture/extended_image_scribble.dart';
 export 'src/gesture/extended_image_gesture_page_view.dart';
 export 'src/gesture/extended_image_gesture_utils.dart';
 export 'src/gesture/extended_image_slide_page.dart';

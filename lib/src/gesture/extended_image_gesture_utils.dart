@@ -335,6 +335,27 @@ class GestureDetails {
   }
 }
 
+/// Listen for [GestureDetails] events.
+class GestureDetailsListener extends InheritedWidget {
+  /// Get nearest parent of [GestureDetailsListener].
+  /// Nullable.
+  static GestureDetailsListener of(BuildContext context) =>
+      context?.dependOnInheritedWidgetOfExactType<GestureDetailsListener>();
+
+  GestureDetailsListener({@required Widget child, @required ValueChanged<GestureDetails> listener})
+      : _listener = listener,
+        super(child: child);
+
+  final ValueChanged<GestureDetails> _listener;
+
+  onGestureDetails(GestureDetails details) => _listener != null ? _listener(details) : null;
+
+  @override
+  bool updateShouldNotify(InheritedWidget oldWidget) {
+    return false;
+  }
+}
+
 /// init image rect with alignment when initialScale > 1.0
 /// see https://github.com/fluttercandies/extended_image/issues/66
 enum InitialAlignment {

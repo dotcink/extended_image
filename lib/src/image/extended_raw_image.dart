@@ -202,6 +202,11 @@ class ExtendedRawImage extends LeafRenderObjectWidget {
   @override
   void updateRenderObject(
       BuildContext context, ExtendedRenderImage renderObject) {
+    if (renderObject.gestureDetails != gestureDetails) {
+      // notify on changed
+      GestureDetailsListener.of(context)?.onGestureDetails(gestureDetails);
+    }
+
     renderObject
       ..image = image
       ..width = width

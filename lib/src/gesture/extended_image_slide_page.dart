@@ -16,6 +16,19 @@ enum SlideType {
 }
 
 class ExtendedImageSlidePage extends StatefulWidget {
+  const ExtendedImageSlidePage({
+    this.child,
+    this.slidePageBackgroundHandler,
+    this.slideScaleHandler,
+    this.slideOffsetHandler,
+    this.slideEndHandler,
+    this.slideAxis = SlideAxis.both,
+    this.resetPageDuration = const Duration(milliseconds: 500),
+    this.slideType = SlideType.onlyImage,
+    this.onSlidingPage,
+    Key key,
+  }) : super(key: key);
+
   ///The [child] contained by the ExtendedImageGesturePage.
   final Widget child;
 
@@ -26,7 +39,7 @@ class ExtendedImageSlidePage extends StatefulWidget {
   final SlideScaleHandler slideScaleHandler;
 
   ///customize offset when slide page
-  final SlideOffsetHanlder slideOffsetHandler;
+  final SlideOffsetHandler slideOffsetHandler;
 
   ///call back of slide end
   ///decide whether pop page
@@ -44,19 +57,6 @@ class ExtendedImageSlidePage extends StatefulWidget {
 
   /// on sliding page
   final OnSlidingPage onSlidingPage;
-
-  ExtendedImageSlidePage({
-    this.child,
-    this.slidePageBackgroundHandler,
-    this.slideScaleHandler,
-    this.slideOffsetHandler,
-    this.slideEndHandler,
-    this.slideAxis: SlideAxis.both,
-    this.resetPageDuration: const Duration(milliseconds: 500),
-    this.slideType: SlideType.onlyImage,
-    this.onSlidingPage,
-    Key key,
-  }) : super(key: key);
   @override
   ExtendedImageSlidePageState createState() => ExtendedImageSlidePageState();
 }
@@ -84,7 +84,7 @@ class ExtendedImageSlidePageState extends State<ExtendedImageSlidePage>
   double _scale = 1.0;
   double get scale =>
       _backAnimationController.isAnimating ? backScaleAnimation.value : _scale;
-  bool _poping = false;
+  bool _popping = false;
 
   @override
   void initState() {
@@ -106,11 +106,14 @@ class ExtendedImageSlidePageState extends State<ExtendedImageSlidePage>
   }
 
   ExtendedImageGestureState _extendedImageGestureState;
+  ExtendedImageGestureState get imageGestureState => _extendedImageGestureState;
   ExtendedImageSlidePageHandlerState _extendedImageSlidePageHandlerState;
   void _backAnimation() {
     if (mounted) {
       setState(() {
-        if (_backAnimationController.isCompleted) _isSliding = false;
+        if (_backAnimationController.isCompleted) {
+          _isSliding = false;
+        }
       });
     }
     if (widget.slideType == SlideType.onlyImage) {
@@ -130,38 +133,54 @@ class ExtendedImageSlidePageState extends State<ExtendedImageSlidePage>
   void slide(Offset value,
       {ExtendedImageGestureState extendedImageGestureState,
       ExtendedImageSlidePageHandlerState extendedImageSlidePageHandlerState}) {
-    if (_backAnimationController.isAnimating) return;
-    _offset = value;
-    if (widget.slideAxis == SlideAxis.horizontal) {
-      _offset = Offset(value.dx, 0.0);
-    } else if (widget.slideAxis == SlideAxis.vertical) {
-      _offset = Offset(0.0, value.dy);
+    if (_backAnimationController.isAnimating) {
+      return;
     }
-    _offset = widget.slideOffsetHandler?.call(_offset) ?? _offset;
+    _extendedImageGestureState = extendedImageGestureState;
+    _extendedImageSlidePageHandlerState = extendedImageSlidePageHandlerState;
+    _offset += value;
+    if (widget.slideAxis == SlideAxis.horizontal) {
+      _offset += Offset(value.dx, 0.0);
+    } else if (widget.slideAxis == SlideAxis.vertical) {
+      _offset += Offset(0.0, value.dy);
+    }
+    _offset = widget.slideOffsetHandler?.call(
+          _offset,
+          state: this,
+        ) ??
+        _offset;
 
-    _scale = widget.slideScaleHandler?.call(_offset) ??
+    _scale = widget.slideScaleHandler?.call(
+          _offset,
+          state: this,
+        ) ??
         defaultSlideScaleHandler(
             offset: _offset,
             pageSize: pageSize,
             pageGestureAxis: widget.slideAxis);
-    _isSliding = true;
 
-    if (widget.slideType == SlideType.onlyImage) {
-      _extendedImageGestureState = extendedImageGestureState;
-      _extendedImageGestureState?.slide();
-      _extendedImageSlidePageHandlerState = extendedImageSlidePageHandlerState;
-      _extendedImageSlidePageHandlerState?.slide();
-    }
+    //if (_scale != 1.0 || _offset != Offset.zero)
+    {
+      _isSliding = true;
+      if (widget.slideType == SlideType.onlyImage) {
+        _extendedImageGestureState?.slide();
+        _extendedImageSlidePageHandlerState?.slide();
+      }
 
-    if (mounted) {
-      setState(() {});
+      if (mounted) {
+        setState(() {});
+      }
+      widget.onSlidingPage?.call(this);
     }
-    widget.onSlidingPage?.call(this);
   }
 
-  void endSlide() {
+  void endSlide(ScaleEndDetails details) {
     if (mounted && _isSliding) {
-      var popPage = widget.slideEndHandler?.call(_offset) ??
+      final bool popPage = widget.slideEndHandler?.call(
+            _offset,
+            state: this,
+            details: details,
+          ) ??
           defaultSlideEndHandler(
               offset: _offset,
               pageSize: _pageSize,
@@ -169,19 +188,26 @@ class ExtendedImageSlidePageState extends State<ExtendedImageSlidePage>
 
       if (popPage) {
         setState(() {
-          _poping = true;
+          _popping = true;
           _isSliding = false;
         });
         Navigator.pop(context);
       } else {
-        _backOffsetAnimation = _backAnimationController
-            .drive(Tween<Offset>(begin: _offset, end: Offset.zero));
-        _backScaleAnimation = _backAnimationController
-            .drive(Tween<double>(begin: _scale, end: 1.0));
-        _offset = Offset.zero;
-        _scale = 1.0;
-        _backAnimationController.reset();
-        _backAnimationController.forward();
+        //_isSliding=false;
+        if (_offset != Offset.zero || _scale != 1.0) {
+          _backOffsetAnimation = _backAnimationController
+              .drive(Tween<Offset>(begin: _offset, end: Offset.zero));
+          _backScaleAnimation = _backAnimationController
+              .drive(Tween<double>(begin: _scale, end: 1.0));
+          _offset = Offset.zero;
+          _scale = 1.0;
+          _backAnimationController.reset();
+          _backAnimationController.forward();
+        } else {
+          setState(() {
+            _isSliding = false;
+          });
+        }
       }
     }
   }
@@ -209,7 +235,7 @@ class ExtendedImageSlidePageState extends State<ExtendedImageSlidePage>
     }
 
     result = Container(
-      color: _poping ? Colors.transparent : pageColor,
+      color: _popping ? Colors.transparent : pageColor,
       child: result,
     );
 
@@ -223,7 +249,7 @@ class ExtendedImageSlidePageState extends State<ExtendedImageSlidePage>
 
   void popPage() {
     setState(() {
-      _poping = true;
+      _popping = true;
     });
   }
 }

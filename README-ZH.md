@@ -19,7 +19,7 @@
   - [目录](#%e7%9b%ae%e5%bd%95)
   - [缓存网络图片](#%e7%bc%93%e5%ad%98%e7%bd%91%e7%bb%9c%e5%9b%be%e7%89%87)
     - [简单使用](#%e7%ae%80%e5%8d%95%e4%bd%bf%e7%94%a8)
-    - [使用 Extendednetworkimageprovider](#%e4%bd%bf%e7%94%a8-extendednetworkimageprovider)
+    - [使用 ExtendedNetworkImageProvider](#%e4%bd%bf%e7%94%a8-extendednetworkimageprovider)
   - [加载状态](#%e5%8a%a0%e8%bd%bd%e7%8a%b6%e6%80%81)
     - [例子](#%e4%be%8b%e5%ad%90)
   - [缩放拖拽](#%e7%bc%a9%e6%94%be%e6%8b%96%e6%8b%bd)
@@ -28,14 +28,14 @@
     - [裁剪框的宽高比](#%e8%a3%81%e5%89%aa%e6%a1%86%e7%9a%84%e5%ae%bd%e9%ab%98%e6%af%94)
     - [旋转,翻转,重置](#%e6%97%8b%e8%bd%ac%e7%bf%bb%e8%bd%ac%e9%87%8d%e7%bd%ae)
     - [裁剪数据](#%e8%a3%81%e5%89%aa%e6%95%b0%e6%8d%ae)
-      - [使用 dart 库(稳定)](#%e4%bd%bf%e7%94%a8dart%e5%ba%93%e7%a8%b3%e5%ae%9a)
+      - [使用 dart 库(稳定)](#%e4%bd%bf%e7%94%a8-dart-%e5%ba%93%e7%a8%b3%e5%ae%9a)
       - [使用原生库(快速)](#%e4%bd%bf%e7%94%a8%e5%8e%9f%e7%94%9f%e5%ba%93%e5%bf%ab%e9%80%9f)
   - [图片浏览](#%e5%9b%be%e7%89%87%e6%b5%8f%e8%a7%88)
   - [滑动退出页面](#%e6%bb%91%e5%8a%a8%e9%80%80%e5%87%ba%e9%a1%b5%e9%9d%a2)
     - [首先开启滑动退出页面效果](#%e9%a6%96%e5%85%88%e5%bc%80%e5%90%af%e6%bb%91%e5%8a%a8%e9%80%80%e5%87%ba%e9%a1%b5%e9%9d%a2%e6%95%88%e6%9e%9c)
-    - [把你的页面用 ExtendedImageSlidePage 包一下](#%e6%8a%8a%e4%bd%a0%e7%9a%84%e9%a1%b5%e9%9d%a2%e7%94%a8extendedimageslidepage%e5%8c%85%e4%b8%80%e4%b8%8b)
+    - [把你的页面用 ExtendedImageSlidePage 包一下](#%e6%8a%8a%e4%bd%a0%e7%9a%84%e9%a1%b5%e9%9d%a2%e7%94%a8-extendedimageslidepage-%e5%8c%85%e4%b8%80%e4%b8%8b)
     - [确保你的页面是透明背景的](#%e7%a1%ae%e4%bf%9d%e4%bd%a0%e7%9a%84%e9%a1%b5%e9%9d%a2%e6%98%af%e9%80%8f%e6%98%8e%e8%83%8c%e6%99%af%e7%9a%84)
-    - [Push 一个透明的页面](#push%e4%b8%80%e4%b8%aa%e9%80%8f%e6%98%8e%e7%9a%84%e9%a1%b5%e9%9d%a2)
+    - [Push 一个透明的页面](#push-%e4%b8%80%e4%b8%aa%e9%80%8f%e6%98%8e%e7%9a%84%e9%a1%b5%e9%9d%a2)
   - [Border BorderRadius Shape](#border-borderradius-shape)
   - [清除缓存和保存](#%e6%b8%85%e9%99%a4%e7%bc%93%e5%ad%98%e5%92%8c%e4%bf%9d%e5%ad%98)
     - [清除缓存](#%e6%b8%85%e9%99%a4%e7%bc%93%e5%ad%98)
@@ -66,7 +66,7 @@ ExtendedImage.network(
 )
 ```
 
-### 使用 Extendednetworkimageprovider
+### 使用 ExtendedNetworkImageProvider
 
 你也可以通过[ExtendedNetworkImageProvider](https://github.com/fluttercandies/extended_image_library/blob/master/lib/src/extended_network_image_provider.dart)，设置更多的网络请求的参数
 
@@ -149,6 +149,7 @@ ExtendedImageState 状态回调
 | imageStreamKey               | 图片流的唯一键                                                                                         | -    |
 | reLoadImage()                | 如果图片加载失败，你可以通过调用这个方法来重新加载图片                                                 | -    |
 | completedWidget              | 返回图片完成的 Widget，它包含手势以及裁剪                                                              | -    |
+| loadingProgress              | 返回网络图片加载进度 (ImageChunkEvent )                                                                | -    |
 
 ```dart
 abstract class ExtendedImageState {
@@ -156,7 +157,7 @@ abstract class ExtendedImageState {
   ImageInfo get extendedImageInfo;
   LoadState get extendedImageLoadState;
 
-  ///return widget which from LoadStateChanged fucntion  immediately
+  ///return widget which from LoadStateChanged function  immediately
   bool returnLoadStateChangedWidget;
 
   ImageProvider get imageProvider;
@@ -241,30 +242,30 @@ ExtendedImage
 
 | 参数                     | 描述                                                                  | 默认 |
 | ------------------------ | --------------------------------------------------------------------- | ---- |
-| mode                     | 图片模式，默认/手势/编辑 (none,gestrue,editor)                        | none |
+| mode                     | 图片模式，默认/手势/编辑 (none, gesture, editor)                        | none |
 | initGestureConfigHandler | 手势配置的回调(图片加载完成时).你可以根据图片的信息比如宽高，来初始化 | -    |
 | onDoubleTap              | 支持手势的时候，双击回调                                              | -    |
 
 GestureConfig
 
-| 参数              | 描述                                                                                                     | 默认值                  |
-| ----------------- | -------------------------------------------------------------------------------------------------------- | ----------------------- |
-| minScale          | 缩放最小值                                                                                               | 0.8                     |
-| animationMinScale | 缩放动画最小值，当缩放结束时回到 minScale 值                                                             | minScale \* 0.8         |
-| maxScale          | 缩放最大值                                                                                               | 5.0                     |
-| animationMaxScale | 缩放动画最大值，当缩放结束时回到 maxScale 值                                                             | maxScale \* 1.2         |
-| speed             | 缩放拖拽速度，与用户操作成正比                                                                           | 1.0                     |
-| inertialSpeed     | 拖拽惯性速度，与惯性速度成正比                                                                           | 100                     |
-| cacheGesture      | 是否缓存手势状态，可用于 ExtendedImageGesturePageView 中保留状态，使用 clearGestureDetailsCache 方法清除 | false                   |
-| inPageView        | 是否使用 ExtendedImageGesturePageView 展示图片                                                           | false                   |
-| initialAlignment  | 当图片的初始化缩放大于 1.0 的时候，根据相对位置初始化图片                                                | InitialAlignment.center |
+| 参数              | 描述                                                                                                         | 默认值                  |
+| ----------------- | ------------------------------------------------------------------------------------------------------------ | ----------------------- |
+| minScale          | 缩放最小值                                                                                                   | 0.8                     |
+| animationMinScale | 缩放动画最小值，当缩放结束时回到 minScale 值                                                                 | minScale \* 0.8         |
+| maxScale          | 缩放最大值                                                                                                   | 5.0                     |
+| animationMaxScale | 缩放动画最大值，当缩放结束时回到 maxScale 值                                                                 | maxScale \* 1.2         |
+| speed             | 缩放拖拽速度，与用户操作成正比                                                                               | 1.0                     |
+| inertialSpeed     | 拖拽惯性速度，与惯性速度成正比                                                                               | 100                     |
+| cacheGesture      | 是否缓存手势状态，可用于 ExtendedImageGesturePageView 中保留状态，**使用 clearGestureDetailsCache 方法清除** | false                   |
+| inPageView        | 是否使用 ExtendedImageGesturePageView 展示图片                                                               | false                   |
+| initialAlignment  | 当图片的初始化缩放大于 1.0 的时候，根据相对位置初始化图片                                                    | InitialAlignment.center |
 
 ```dart
 ExtendedImage.network(
   imageTestUrl,
   fit: BoxFit.contain,
   //enableLoadState: false,
-  mode: ExtendedImageMode.Gesture,
+  mode: ExtendedImageMode.gesture,
   initGestureConfigHandler: (state) {
     return GestureConfig(
         minScale: 0.9,
@@ -288,7 +289,7 @@ ExtendedImage.network(
 ```dart
 onDoubleTap: (ExtendedImageGestureState state) {
   ///you can use define pointerDownPosition as you can,
-  ///default value is double tap pointer down postion.
+  ///default value is double tap pointer down position.
   var pointerDownPosition = state.pointerDownPosition;
   double begin = state.gestureDetails.totalScale;
   double end;
@@ -347,7 +348,7 @@ ExtendedImage
 
 | 参数                     | 描述                                                                    | 默认 |
 | ------------------------ | ----------------------------------------------------------------------- | ---- |
-| mode                     | 图片模式，默认/手势/编辑 (none,gestrue,editor)                          | none |
+| mode                     | 图片模式，默认/手势/编辑 (none, gesture, editor)                          | none |
 | initGestureConfigHandler | 编辑器配置的回调(图片加载完成时).你可以根据图片的信息比如宽高，来初始化 | -    |
 | extendedImageEditorKey   | key of ExtendedImageEditorState 用于裁剪旋转翻转                        | -    |
 
@@ -361,7 +362,7 @@ EditorConfig
 | cornerColor            | 裁剪框四角图形的颜色                                                               | primaryColor                                                 |
 | lineColor              | 裁剪框线的颜色                                                                     | scaffoldBackgroundColor.withOpacity(0.7)                     |
 | lineHeight             | 裁剪框线的高度                                                                     | 0.6                                                          |
-| eidtorMaskColorHandler | 蒙层的颜色回调，你可以根据是否手指按下来设置不同的蒙层颜色                         | scaffoldBackgroundColor.withOpacity(pointerdown ? 0.4 : 0.8) |
+| editorMaskColorHandler | 蒙层的颜色回调，你可以根据是否手指按下来设置不同的蒙层颜色                         | scaffoldBackgroundColor.withOpacity(pointerDown ? 0.4 : 0.8) |
 | hitTestSize            | 裁剪框四角以及边线能够拖拽的区域的大小                                             | 20.0                                                         |
 | animationDuration      | 当裁剪框拖拽变化结束之后，自动适应到中间的动画的时长                               | Duration(milliseconds: 200)                                  |
 | tickerDuration         | 当裁剪框拖拽变化结束之后，多少时间才触发自动适应到中间的动画                       | Duration(milliseconds: 400)                                  |
@@ -577,7 +578,7 @@ ExtendedImageGesturePageView.builder(
     Widget image = ExtendedImage.network(
       item,
       fit: BoxFit.contain,
-      mode: ExtendedImageMode.Gesture,
+      mode: ExtendedImageMode.gesture,
       gestureConfig: GestureConfig(
         inPageView: true, initialScale: 1.0,
         //you can cache gesture state even though page view page change.
@@ -800,7 +801,7 @@ Future<File> getCachedImageFile(String url) async {
 插件，ExtendedImage 做的只是提供网络图片的数据源
 
 ```dart
-///save netwrok image to photo
+///save network image to photo
 Future<bool> saveNetworkImageToPhoto(String url, {bool useCache: true}) async {
   var data = await getNetworkImageData(url, useCache: useCache);
   var filePath = await ImagePickerSaver.saveFile(fileData: data);

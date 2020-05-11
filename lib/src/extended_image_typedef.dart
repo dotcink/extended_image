@@ -1,7 +1,8 @@
+import 'dart:ui' as ui show Image;
 import 'package:extended_image/src/extended_image_utils.dart';
 import 'package:extended_image/src/gesture/extended_image_gesture_utils.dart';
 import 'package:flutter/material.dart';
-import 'dart:ui' as ui show Image;
+
 
 import 'editor/extended_image_editor_utils.dart';
 import 'gesture/extended_image_slide_page.dart';
@@ -35,14 +36,24 @@ typedef SlidePageBackgroundHandler = Color Function(
     Offset offset, Size pageSize);
 
 /// customize offset of page when slide page
-typedef SlideOffsetHanlder = Offset Function(Offset offset);
+typedef SlideOffsetHandler = Offset Function(
+  Offset offset, {
+  ExtendedImageSlidePageState state,
+});
 
 ///if return true ,pop page
 ///else reset page state
-typedef SlideEndHandler = bool Function(Offset offset);
+typedef SlideEndHandler = bool Function(
+  Offset offset, {
+  ExtendedImageSlidePageState state,
+  ScaleEndDetails details,
+});
 
 ///customize scale of page when slide page
-typedef SlideScaleHandler = double Function(Offset offset);
+typedef SlideScaleHandler = double Function(
+  Offset offset, {
+  ExtendedImageSlidePageState state,
+});
 
 ///init GestureConfig when image is ready.
 typedef InitGestureConfigHandler = GestureConfig Function(
@@ -67,11 +78,18 @@ typedef BuildGestureImage = Widget Function(GestureDetails gestureDetails);
 typedef InitEditorConfigHandler = EditorConfig Function(
     ExtendedImageState state);
 
-///get eidtor mask color base on pointerDown
-typedef EidtorMaskColorHandler = Color Function(
+///get editor mask color base on pointerDown
+typedef EditorMaskColorHandler = Color Function(
     BuildContext context, bool pointerDown);
 
 ///build Hero only for sliding page
-///the transfrom of sliding page must be working on Hero
+///the transform of sliding page must be working on Hero
 ///so that Hero animation wouldn't be strange when pop page
 typedef HeroBuilderForSlidingPage = Widget Function(Widget widget);
+
+
+///build image for gesture, we can handle custom Widget about gesture
+typedef ImageBuilderForGesture = Widget Function(Widget image);
+
+///whether should scale image
+typedef CanScaleImage = bool Function(GestureDetails details);

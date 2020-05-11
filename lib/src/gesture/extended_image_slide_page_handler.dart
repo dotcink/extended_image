@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
-
+import '../extended_image_utils.dart';
 import 'extended_image_gesture_utils.dart';
 import 'extended_image_slide_page.dart';
-import '../extended_image_utils.dart';
 
 ///
 ///  create by zmtzawqlp on 2019/6/14
@@ -10,9 +9,9 @@ import '../extended_image_utils.dart';
 
 /// for loading/failed widget
 class ExtendedImageSlidePageHandler extends StatefulWidget {
+  const ExtendedImageSlidePageHandler(this.child, this.extendedImageSlidePageState);
   final Widget child;
   final ExtendedImageSlidePageState extendedImageSlidePageState;
-  ExtendedImageSlidePageHandler(this.child, this.extendedImageSlidePageState);
   @override
   ExtendedImageSlidePageHandlerState createState() =>
       ExtendedImageSlidePageHandlerState();
@@ -34,7 +33,7 @@ class ExtendedImageSlidePageHandlerState
     if (widget.extendedImageSlidePageState != null &&
         widget.extendedImageSlidePageState.widget.slideType ==
             SlideType.onlyImage) {
-      var extendedImageSlidePageState = widget.extendedImageSlidePageState;
+      final ExtendedImageSlidePageState extendedImageSlidePageState = widget.extendedImageSlidePageState;
       result = Transform.translate(
         offset: extendedImageSlidePageState.offset,
         child: Transform.scale(
@@ -50,19 +49,20 @@ class ExtendedImageSlidePageHandlerState
     _startingOffset = details.focalPoint;
   }
 
-  Offset _updatePageGestureStartingOffset;
+  Offset _updateSlidePagePreOffset;
   void _handleScaleUpdate(ScaleUpdateDetails details) {
     ///whether gesture page
     if (widget.extendedImageSlidePageState != null && details.scale == 1.0) {
       //var offsetDelta = (details.focalPoint - _startingOffset);
 
-      var delta = (details.focalPoint - _startingOffset).distance;
+      final double delta = (details.focalPoint - _startingOffset).distance;
 
       if (doubleCompare(delta, minGesturePageDelta) > 0) {
-        _updatePageGestureStartingOffset ??= details.focalPoint;
+        _updateSlidePagePreOffset ??= details.focalPoint;
         widget.extendedImageSlidePageState.slide(
-            details.focalPoint - _updatePageGestureStartingOffset,
+            details.focalPoint - _updateSlidePagePreOffset,
             extendedImageSlidePageHandlerState: this);
+        _updateSlidePagePreOffset = details.focalPoint;
       }
     }
   }
@@ -70,8 +70,8 @@ class ExtendedImageSlidePageHandlerState
   void _handleScaleEnd(ScaleEndDetails details) {
     if (widget.extendedImageSlidePageState != null &&
         widget.extendedImageSlidePageState.isSliding) {
-      _updatePageGestureStartingOffset = null;
-      widget.extendedImageSlidePageState.endSlide();
+      _updateSlidePagePreOffset = null;
+      widget.extendedImageSlidePageState.endSlide(details);
       return;
     }
   }
